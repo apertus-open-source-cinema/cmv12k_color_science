@@ -1,0 +1,12 @@
+.DS_Store
+.idea
+*.log
+tmp/
+__pycache__
+*.pyc
+
+
+*.zst
+*.pdf
+*.svg
+*.csv
