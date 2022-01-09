@@ -23,11 +23,33 @@ gain = float(m.group(1))
 exposure_ms = float(m.group(2))
 
 
+def low_mem_std(arr, blocksize=1000000):
+    num_blocks, remainder = divmod(len(arr), blocksize)
+    mean = arr.mean()
+    tmp = np.empty(blocksize, dtype=float)
+    total_squares = 0
+    for start in range(0, blocksize*num_blocks, blocksize):
+        view = arr[start:start+blocksize]
+        np.subtract(view, mean, out=tmp)
+        tmp *= tmp
+        total_squares += tmp.sum()
+    if remainder:
+        view = arr[-remainder:]
+        tmp = tmp[-remainder:]
+        np.subtract(view, mean, out=tmp)
+        tmp *= tmp
+        total_squares += tmp.sum()
+
+    var = total_squares / len(arr)
+    sd = var ** 0.5
+    return sd
+
+
 if sys.argv[2] == "means":
     darkframes = read_darkframes(filename)
 
     mean = np.mean(darkframes)
-    std = np.std(darkframes)
+    std = low_mem_std(np.ravel(darkframes))
 
     print(gain, exposure_ms, mean, std, darkframes.shape[0])
 
