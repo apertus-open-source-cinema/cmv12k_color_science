@@ -10,3 +10,6 @@ __pycache__
 *.pdf
 *.svg
 *.csv
+
+*.zarr
+*.blosc2

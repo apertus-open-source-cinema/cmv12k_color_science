@@ -92,9 +92,9 @@ def read_darkframes(filename, *, count = None, progress = False):
                 td = a.reshape((-1, lb))
                 corners_top = get_corners(np.ravel(td[::2, :]), lb // 3, height // 2)
                 corners_bottom = get_corners(np.ravel(td[1::2, :]), lb // 3, height // 2)
-                print(frame)
-                print(corners_top)
-                print(corners_bottom)
+                # print(frame)
+                # print(corners_top)
+                # print(corners_bottom)
 
                 darkframes[frame,::2] += a[::3] << 4
                 darkframes[frame,::2] += a[1::3] >> 4
