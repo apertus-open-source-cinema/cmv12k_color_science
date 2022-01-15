@@ -13,3 +13,5 @@ __pycache__
 
 *.zarr
 *.blosc2
+*.png
+.ipynb_checkpoints
