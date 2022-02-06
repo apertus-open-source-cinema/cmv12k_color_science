@@ -116,35 +116,35 @@ elif sys.argv[2] == "calculate_mean":
     frame_mean = np.mean(darkframes, axis=0)
 
 
-    corrected_darkframes = (darkframes - frame_mean).astype(np.float32)
-    pdf = PdfPages(Path(filename).with_suffix('.single_frame_analysis.pdf'))
-    for i in range(10):
-        df = corrected_darkframes[i]
-        mean = np.mean(df)
-        std = np.std(df)
-        fig = plt.figure()
-        plt.imshow(df.T, vmin = mean - 3 * std, vmax = mean + 3 * std, cmap='seismic')
-        plt.colorbar()
-        plt.tight_layout()
-        plt.title(f"residual of frame {i}, mean = {mean} +- {std}")
-        fig.savefig(pdf, format="pdf")
-        plt.close('all')
+    # corrected_darkframes = (darkframes - frame_mean).astype(np.float32)
+    # pdf = PdfPages(Path(filename).with_suffix('.single_frame_analysis.pdf'))
+    # for i in range(10):
+    #     df = corrected_darkframes[i]
+    #     mean = np.mean(df)
+    #     std = np.std(df)
+    #     fig = plt.figure()
+    #     plt.imshow(df.T, vmin = mean - 3 * std, vmax = mean + 3 * std, cmap='seismic')
+    #     plt.colorbar()
+    #     plt.tight_layout()
+    #     plt.title(f"residual of frame {i}, mean = {mean} +- {std}")
+    #     fig.savefig(pdf, format="pdf")
+    #     plt.close('all')
 
-    for i in range(10):
-        df = corrected_darkframes[i] - corrected_darkframes[i + 1]
-        mean = np.mean(df)
-        std = np.std(df)
-        fig = plt.figure()
-        plt.imshow(df.T, vmin = mean - 3 * std, vmax = mean + 3 * std, cmap='seismic')
-        plt.colorbar()
-        plt.tight_layout()
-        plt.title(f"residual of frame {i} - {i + 1}, mean = {mean} +- {std}")
-        fig.savefig(pdf, format="pdf")
-        plt.close('all')
-    pdf.close()
+    # for i in range(10):
+    #     df = corrected_darkframes[i] - corrected_darkframes[i + 1]
+    #     mean = np.mean(df)
+    #     std = np.std(df)
+    #     fig = plt.figure()
+    #     plt.imshow(df.T, vmin = mean - 3 * std, vmax = mean + 3 * std, cmap='seismic')
+    #     plt.colorbar()
+    #     plt.tight_layout()
+    #     plt.title(f"residual of frame {i} - {i + 1}, mean = {mean} +- {std}")
+    #     fig.savefig(pdf, format="pdf")
+    #     plt.close('all')
+    # pdf.close()
 
 
-    print(gain, exposure_ms, low_mem_std(np.ravel(corrected_darkframes)))
+    # print(gain, exposure_ms, low_mem_std(np.ravel(corrected_darkframes)))
     z = zarr.open(str(Path(filename).with_suffix(".mean.zarr")), mode="w", shape=frame_mean.shape, chunks=-1, dtype="f4")
     z.attrs["gain"] = gain
     z.attrs["exposure"] = exposure_ms
@@ -154,6 +154,20 @@ elif sys.argv[2] == "compress":
     import blosc2
     darkframes = read_darkframes(filename, count=256)
     Path("test.blosc2").write_bytes(blosc2.compress2(darkframes, typesize=2, clevel=3, compcode=blosc2.Codec.ZSTD, nthreads=12))
+elif sys.argv[2] == "load":
+    read_darkframes(filename)
+elif sys.argv[2] == "unpack":
+    outputdir = Path(filename).with_suffix("")
+    outputdir.mkdir(exist_ok=True)
+    for i, df in enumerate(darkframes):
+        top = np.ravel(df[::2,:]).astype(np.uint8)
+        bottom = np.ravel(df[1::2,:]).astype(np.uint8)
+        print("top", top[0], top[1], top[2])
+        print("bottom", bottom[0], bottom[1], bottom[2])
+        (outputdir / f"{2 * i + 0:03}.blob").write_bytes(bottom.tobytes())
+        (outputdir / f"{2 * i + 1:03}.blob").write_bytes(top.tobytes())
+
+
     # frame_mean = np.mean(darkframes, axis=0).astype(np.int16)
     # diffs = darkframes.astype(np.int16) - frame_mean
 

@@ -35,7 +35,7 @@ class CornerMarker:
     def parse(rgb):
         return CornerMarker(frame_number = rgb[0], wrsel = rgb[1], marker = rgb[2])
 
-def read_darkframes(filename, *, count = None, progress = False):
+def read_darkframes(filename, *, count = None, progress = False, asbytes=False):
     def get_corners(data, width: int, height: int) -> list[CornerMarker]:
         return [
             CornerMarker.parse(data[0:]),
@@ -60,18 +60,22 @@ def read_darkframes(filename, *, count = None, progress = False):
                     td = np.frombuffer(test_data[offset:], dtype=np.uint8).reshape((-1, lb))
                     corners_top = get_corners(np.ravel(td[::2, :]), lb // 3, height // 2)
                     corners_bottom = get_corners(np.ravel(td[1::2, :]), lb // 3, height // 2)
+                    print(corners_top)
+                    print(corners_bottom)
 
                     top_valid, top_marker = check_corners(corners_top)
                     bottom_valid, bottom_marker = check_corners(corners_bottom)
 
-                    valid = top_valid and bottom_valid and markers[top_marker] == bottom_marker
+                    valid = top_valid and bottom_valid and top_marker in markers and markers[top_marker] == bottom_marker
                     if valid:
                         break
                 else:
                     continue
                 break
             else:
-                raise Exception("could not find valid corner markers for any resolution")
+                # raise Exception("could not find valid corner markers for any resolution")
+                width = 4096
+                height = 2160
 
     # print(f"using width = {width} and height = {height}")
     with open(filename, 'rb') as fh:
@@ -79,7 +83,10 @@ def read_darkframes(filename, *, count = None, progress = False):
         with dctx.stream_reader(fh) as reader:
             if count is None:
                 count = 8 * get_size(filename) // height // width // bitdepth
-            darkframes = np.zeros((count, width * height), dtype=np.uint16)
+            if not asbytes:
+                darkframes = np.zeros((count, width * height), dtype=np.uint16)
+            else:
+                darkframes = []
 
             bytes_per_frame = width * height * bitdepth // 8
             lb = bitdepth * width // 8
@@ -90,18 +97,25 @@ def read_darkframes(filename, *, count = None, progress = False):
                 a = np.frombuffer(b, dtype=np.uint8).astype(np.uint16)
 
                 td = a.reshape((-1, lb))
+
                 corners_top = get_corners(np.ravel(td[::2, :]), lb // 3, height // 2)
                 corners_bottom = get_corners(np.ravel(td[1::2, :]), lb // 3, height // 2)
-                # print(frame)
-                # print(corners_top)
-                # print(corners_bottom)
+                print(frame)
+                print(corners_top)
+                print(corners_bottom)
 
-                darkframes[frame,::2] += a[::3] << 4
-                darkframes[frame,::2] += a[1::3] >> 4
-                darkframes[frame,1::2] += (a[1::3] & 0xf) << 8
-                darkframes[frame,1::2] += a[2::3]
-            darkframes = darkframes[:frame,:]
+                if asbytes:
+                    darkframes.append(td)
+                else:
+                    darkframes[frame,::2] += a[::3] << 4
+                    darkframes[frame,::2] += a[1::3] >> 4
+                    darkframes[frame,1::2] += (a[1::3] & 0xf) << 8
+                    darkframes[frame,1::2] += a[2::3]
+
+            if not asbytes:
+                darkframes = darkframes[:frame,:]
 
 
-    darkframes = darkframes.reshape((frame, width, height))
+    if not asbytes:
+        darkframes = darkframes.reshape((frame, width, height))
     return darkframes
