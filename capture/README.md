@@ -1,6 +1,6 @@
 # Prerequisites
 * you need a recent Firmware 2.0 running on your AXIOM Beta.
-* In the Magewell Setup Tool (usbcaptureutility) in the advanced HDMI settings -> Resolution set 2048x1080 as only resolution on the left column, then save to device and reconnect device. 
+* In the Magewell Setup Tool (usbcaptureutility) in the advanced HDMI settings -> Resolution set 2048x1080 as only resolution on the left column and 50 FPS as only framerate option, then save to device and reconnect device. 
 
 # Usage
 On the AXIOM Beta initialize the 4096 pixel wide raw mode with running the init script (as root) available from this repository instead of axiom_start.sh:
