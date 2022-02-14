@@ -1,5 +1,6 @@
 # Prerequisites
 * you need a recent Firmware 2.0 running on your AXIOM Beta.
+* Your AXIOM Recorder device needs to have a keypair installed on the AXIOM Beta for passwordless root access to the Beta
 * In the Magewell Setup Tool (usbcaptureutility) in the advanced HDMI settings -> Resolution set 2048x1080 as only resolution on the left column and 50 FPS as only framerate option, then save to device and reconnect device. 
 
 # Usage
