@@ -3,7 +3,6 @@ import asyncio
 from asyncio.futures import Future
 import socketio
 import numpy as np
-import subprocess
 
 sio = socketio.AsyncClient()
 
@@ -27,13 +26,13 @@ async def do_work():
             exposure = await set_exposure_ms(exposure)
             gain = await set_gain(gain)
 
-            print(exposure)
             n = 1024 // max(1, int(round(np.log(exposure) / np.log(10))))
 
-            subprocess.Popen(["/data/projects/recorder/target/release/cli", "WebcamInput", "--device", "4",
-                              "!", "DualFrameRawDecoder",
-                              "!", "Average", f"--n={n}",
-                              "!", "RawBlobWriter", "--number-of-frames=1", "--path", f"darkframe_{gain}x_{exposure}ms_{n}n.blob"]).communicate()
+            proc = await asyncio.create_subprocess_shell("/data/projects/recorder/target/release/cli WebcamInput --device 4"
+                              " ! DualFrameRawDecoder "
+                              f" ! Average --n={n}"
+                              f" ! RawBlobWriter --number-of-frames=1 --path darkframe_{gain}x_{exposure}ms_{n}n.blob")
+            await proc.communicate()
 
 async def main():
     await sio.connect('http://beta.lan')
