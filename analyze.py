@@ -152,7 +152,7 @@ elif sys.argv[2] == "calculate_mean":
     z[:] = frame_mean
 elif sys.argv[2] == "compress":
     import blosc2
-    darkframes = read_darkframes(filename, count=256)
+    darkframes = read_darkframes(filename, count=128)
     Path("test.blosc2").write_bytes(blosc2.compress2(darkframes, typesize=2, clevel=3, compcode=blosc2.Codec.ZSTD, nthreads=12))
 elif sys.argv[2] == "load":
     read_darkframes(filename)
