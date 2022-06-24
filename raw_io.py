@@ -117,5 +117,5 @@ def read_darkframes(filename, *, count = None, progress = False, asbytes=False):
 
 
     if not asbytes:
-        darkframes = darkframes.reshape((frame, width, height))
+        darkframes = darkframes.reshape((frame, height, width))
     return darkframes
